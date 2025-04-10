@@ -12,4 +12,7 @@ cmd : "create -p venv python==3.13 -y"
 
 5: add readme file if exists else no need
 
-6:
+6: adding the remote configuration for github
+# git set-url origin https://<token-api-key>@github.com/<username>/<repo>
+
+7:

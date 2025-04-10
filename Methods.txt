@@ -1,7 +1,7 @@
 1: make a conda base project initialization
 
 2: make a python environment
-# first i had to create a conda python enironment
+# first I had to create a conda python environment
 cmd : "create -p venv python==3.13 -y"
 
 3: activate conda
@@ -12,7 +12,24 @@ cmd : "create -p venv python==3.13 -y"
 
 5: add readme file if exists else no need
 
-6: adding the remote configuration for github
+6: adding the remote configuration for git
 # git set-url origin https://<token-api-key>@github.com/<username>/<repo>
 
-7:
+7: fetch, pull | merge , commit , push
+# git fetch origin
+# git merge origin/main --allow-unrelated-histories
+# git push -u origin main
+
+8: made 2 files
+# requirements.txt : all the required packages that I will need for this project
+# setup.py : initializing those packages and managing the errors
+
+9: add details for the requirement.txt
+# fill the setup.py
+
+10: make a source folder that holds the source and core code for the project
+
+11: add a '__init__.py' for initializing our main code
+
+12: working with setup.py code for requirements
+# making setup.py as the

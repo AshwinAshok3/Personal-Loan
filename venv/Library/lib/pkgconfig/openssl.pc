@@ -1,0 +1,9 @@
+prefix=F:/SkillUp TechMaster 2024-25/Capstone Project/Personal Loan/Personal Loan/venv/Library 
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: OpenSSL
+Description: Secure Sockets Layer and cryptography libraries and tools
+Requires: libssl libcrypto
+Version: 3.0.16 

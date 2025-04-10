@@ -1,0 +1,15 @@
+1: make a conda base project initialization
+
+2: make a python environment
+# first i had to create a conda python enironment
+cmd : "create -p venv python==3.13 -y"
+
+3: activate conda
+# conda activate venv/
+
+4: initialize the git
+# git init
+
+5: add readme file if exists else no need
+
+6:

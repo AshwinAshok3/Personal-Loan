@@ -57,7 +57,9 @@ pip install -r requirements.txt
 
 16: create a components folder for handling the dependencies
 
-17:
+17: create exceptions and loggers file for exception and error handling
+
+18:
 
 
 

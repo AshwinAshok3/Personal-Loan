@@ -7,4 +7,7 @@ scikit-learn==1.6.0
 keras-tuner>=1.4.6
 tensorflow>=2.16
 dash>=3.0
+xgboost>=2.0
+lightgbm>=4.3
+catboost>=1.2
 -e .

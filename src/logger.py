@@ -22,4 +22,5 @@ logging.basicConfig(
 )
 
 if __name__ == "__main__":
+
     logging.info(f"Logging to {LOG_FILE_PATH}")

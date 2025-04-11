@@ -1,23 +1,31 @@
-# importing system library for runtime environment
-# and accessibility
-import sys
+# exception.py
+# Purpose: Custom Exception Handling with detailed error tracking.
 
-# a function to store the error message information
-def err_msg_info(err, err_info: sys):
-    _, _, exc_tb = err_info.exc_info()
-    file_name = exc_tb.tb_frame.f_code.co_filename
-    error_message = f"error occurred in python script name [{file_name}] , \n line number [{exc_tb.tb_lineno}],  \n exception info [{str(err)}]"
+import sys  # To fetch runtime exception details like traceback
+
+# Error message formatting function
+def error_message_detail(error, error_detail: sys):
+    _, _, exc_tb = error_detail.exc_info()  # Extract traceback info
+    file_name = exc_tb.tb_frame.f_code.co_filename  # Which file caused the error
+    line_number = exc_tb.tb_lineno  # Line number of error
+
+    # Formatted error message
+    error_message = (
+        f"Error occurred in Python script: [{file_name}], "
+        f"Line Number: [{line_number}], "
+        f"Error Details: [{str(error)}]"
+    )
     return error_message
 
 
-# a class to define the functions of error handling
+# Custom Exception Class
 class CustomException(Exception):
-    def __init__(self, error_message, err_info: sys):
-        super.__init__(error_message)
-        self.error_message = err_msg_info(error_message, err_info=err_info)
+    def __init__(self, error_message, error_detail: sys):
+        super().__init__(error_message)  # Initialize base Exception class
+        self.error_message = error_message_detail(error_message, error_detail)
 
     def __str__(self):
-        return self.error_message
+        return self.error_message  # When printed
 
     def __repr__(self):
-        return self.error_message
+        return self.error_message  # For object representation

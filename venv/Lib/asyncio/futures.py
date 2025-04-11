@@ -138,6 +138,9 @@ class Future:
             exc = exceptions.CancelledError()
         else:
             exc = exceptions.CancelledError(self._cancel_message)
+        exc.__context__ = self._cancelled_exc
+        # Remove the reference since we don't need this anymore.
+        self._cancelled_exc = None
         return exc
 
     def cancel(self, msg=None):
@@ -191,8 +194,7 @@ class Future:
         the future is done and has an exception set, this exception is raised.
         """
         if self._state == _CANCELLED:
-            exc = self._make_cancelled_error()
-            raise exc
+            raise self._make_cancelled_error()
         if self._state != _FINISHED:
             raise exceptions.InvalidStateError('Result is not ready.')
         self.__log_traceback = False
@@ -209,8 +211,7 @@ class Future:
         InvalidStateError.
         """
         if self._state == _CANCELLED:
-            exc = self._make_cancelled_error()
-            raise exc
+            raise self._make_cancelled_error()
         if self._state != _FINISHED:
             raise exceptions.InvalidStateError('Exception is not set.')
         self.__log_traceback = False
@@ -319,9 +320,11 @@ def _set_result_unless_cancelled(fut, result):
 def _convert_future_exc(exc):
     exc_class = type(exc)
     if exc_class is concurrent.futures.CancelledError:
-        return exceptions.CancelledError(*exc.args).with_traceback(exc.__traceback__)
+        return exceptions.CancelledError(*exc.args)
+    elif exc_class is concurrent.futures.TimeoutError:
+        return exceptions.TimeoutError(*exc.args)
     elif exc_class is concurrent.futures.InvalidStateError:
-        return exceptions.InvalidStateError(*exc.args).with_traceback(exc.__traceback__)
+        return exceptions.InvalidStateError(*exc.args)
     else:
         return exc
 

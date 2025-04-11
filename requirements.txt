@@ -1,10 +1,10 @@
-pandas==2.2
-numpy==2.2
-matplotlib==3.10
-seaborn==3.8
-streamlit==1.44
-sklearn==1.6
-keras_tuner==1.4.6
-tensorflow==2.16
-dash==3.0
+numpy==1.26.0
+pandas==2.2.1
+matplotlib==3.10.0
+seaborn==0.13.0
+streamlit==1.44.0
+scikit-learn==1.6.0
+keras-tuner>=1.4.6
+tensorflow>=2.16
+dash>=3.0
 -e .

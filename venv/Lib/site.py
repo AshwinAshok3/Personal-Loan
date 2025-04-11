@@ -281,18 +281,14 @@ def check_enableusersite():
 #
 # See https://bugs.python.org/issue29585
 
-# Copy of sysconfig._get_implementation()
-def _get_implementation():
-    return 'Python'
-
 # Copy of sysconfig._getuserbase()
 def _getuserbase():
     env_base = os.environ.get("PYTHONUSERBASE", None)
     if env_base:
         return env_base
 
-    # Emscripten, iOS, tvOS, VxWorks, WASI, and watchOS have no home directories
-    if sys.platform in {"emscripten", "ios", "tvos", "vxworks", "wasi", "watchos"}:
+    # Emscripten, VxWorks, and WASI have no home directories
+    if sys.platform in {"emscripten", "vxworks", "wasi"}:
         return None
 
     def joinuser(*args):
@@ -300,7 +296,7 @@ def _getuserbase():
 
     if os.name == "nt":
         base = os.environ.get("APPDATA") or "~"
-        return joinuser(base, _get_implementation())
+        return joinuser(base, "Python")
 
     if sys.platform == "darwin" and sys._framework:
         return joinuser("~", "Library", sys._framework,
@@ -312,21 +308,15 @@ def _getuserbase():
 # Same to sysconfig.get_path('purelib', os.name+'_user')
 def _get_path(userbase):
     version = sys.version_info
-    if hasattr(sys, 'abiflags') and 't' in sys.abiflags:
-        abi_thread = 't'
-    else:
-        abi_thread = ''
 
-    implementation = _get_implementation()
-    implementation_lower = implementation.lower()
     if os.name == 'nt':
         ver_nodot = sys.winver.replace('.', '')
-        return f'{userbase}\\{implementation}{ver_nodot}\\site-packages'
+        return f'{userbase}\\Python{ver_nodot}\\site-packages'
 
     if sys.platform == 'darwin' and sys._framework:
-        return f'{userbase}/lib/{implementation_lower}/site-packages'
+        return f'{userbase}/lib/python/site-packages'
 
-    return f'{userbase}/lib/python{version[0]}.{version[1]}{abi_thread}/site-packages'
+    return f'{userbase}/lib/python{version[0]}.{version[1]}/site-packages'
 
 
 def getuserbase():
@@ -392,12 +382,6 @@ def getsitepackages(prefixes=None):
             continue
         seen.add(prefix)
 
-        implementation = _get_implementation().lower()
-        ver = sys.version_info
-        if hasattr(sys, 'abiflags') and 't' in sys.abiflags:
-            abi_thread = 't'
-        else:
-            abi_thread = ''
         if os.sep == '/':
             libdirs = [sys.platlibdir]
             if sys.platlibdir != "lib":
@@ -405,7 +389,7 @@ def getsitepackages(prefixes=None):
 
             for libdir in libdirs:
                 path = os.path.join(prefix, libdir,
-                                    f"{implementation}{ver[0]}.{ver[1]}{abi_thread}",
+                                    "python%d.%d" % sys.version_info[:2],
                                     "site-packages")
                 sitepackages.append(path)
         else:
@@ -442,8 +426,9 @@ def setcopyright():
     """Set 'copyright' and 'credits' in builtins"""
     builtins.copyright = _sitebuiltins._Printer("copyright", sys.copyright)
     builtins.credits = _sitebuiltins._Printer("credits", """\
-    Thanks to CWI, CNRI, BeOpen.com, Zope Corporation and a cast of thousands
-    for supporting Python development.  See www.python.org for more information.""")
+    Thanks to CWI, CNRI, BeOpen, Zope Corporation, the Python Software
+    Foundation, and a cast of thousands for supporting Python
+    development.  See www.python.org for more information.""")
     files, dirs = [], []
     # Not all modules are required to have a __file__ attribute.  See
     # PEP 420 for more details.
@@ -462,88 +447,64 @@ def setcopyright():
 def sethelper():
     builtins.help = _sitebuiltins._Helper()
 
-
-def gethistoryfile():
-    """Check if the PYTHON_HISTORY environment variable is set and define
-    it as the .python_history file.  If PYTHON_HISTORY is not set, use the
-    default .python_history file.
-    """
-    if not sys.flags.ignore_environment:
-        history = os.environ.get("PYTHON_HISTORY")
-        if history:
-            return history
-    return os.path.join(os.path.expanduser('~'),
-        '.python_history')
-
-
 def enablerlcompleter():
     """Enable default readline configuration on interactive prompts, by
     registering a sys.__interactivehook__.
-    """
-    sys.__interactivehook__ = register_readline
-
-
-def register_readline():
-    """Configure readline completion on interactive prompts.
 
     If the readline module can be imported, the hook will set the Tab key
     as completion key and register ~/.python_history as history file.
     This can be overridden in the sitecustomize or usercustomize module,
     or in a PYTHONSTARTUP file.
     """
-    import atexit
-    try:
-        import readline
-        import rlcompleter
-        import _pyrepl.readline
-        import _pyrepl.unix_console
-    except ImportError:
-        return
-
-    # Reading the initialization (config) file may not be enough to set a
-    # completion key, so we set one first and then read the file.
-    if readline.backend == 'editline':
-        readline.parse_and_bind('bind ^I rl_complete')
-    else:
-        readline.parse_and_bind('tab: complete')
-
-    try:
-        readline.read_init_file()
-    except OSError:
-        # An OSError here could have many causes, but the most likely one
-        # is that there's no .inputrc file (or .editrc file in the case of
-        # Mac OS X + libedit) in the expected location.  In that case, we
-        # want to ignore the exception.
-        pass
-
-    if readline.get_current_history_length() == 0:
-        from _pyrepl.main import CAN_USE_PYREPL
-        # If no history was loaded, default to .python_history,
-        # or PYTHON_HISTORY.
-        # The guard is necessary to avoid doubling history size at
-        # each interpreter exit when readline was already configured
-        # through a PYTHONSTARTUP hook, see:
-        # http://bugs.python.org/issue5845#msg198636
-        history = gethistoryfile()
-        if os.getenv("PYTHON_BASIC_REPL") or not CAN_USE_PYREPL:
-            readline_module = readline
-        else:
-            readline_module = _pyrepl.readline
+    def register_readline():
+        import atexit
         try:
-            readline_module.read_history_file(history)
-        except (OSError,* _pyrepl.unix_console._error):
+            import readline
+            import rlcompleter
+        except ImportError:
+            return
+
+        # Reading the initialization (config) file may not be enough to set a
+        # completion key, so we set one first and then read the file.
+        readline_doc = getattr(readline, '__doc__', '')
+        if readline_doc is not None and 'libedit' in readline_doc:
+            readline.parse_and_bind('bind ^I rl_complete')
+        else:
+            readline.parse_and_bind('tab: complete')
+
+        try:
+            readline.read_init_file()
+        except OSError:
+            # An OSError here could have many causes, but the most likely one
+            # is that there's no .inputrc file (or .editrc file in the case of
+            # Mac OS X + libedit) in the expected location.  In that case, we
+            # want to ignore the exception.
             pass
 
-        def write_history():
+        if readline.get_current_history_length() == 0:
+            # If no history was loaded, default to .python_history.
+            # The guard is necessary to avoid doubling history size at
+            # each interpreter exit when readline was already configured
+            # through a PYTHONSTARTUP hook, see:
+            # http://bugs.python.org/issue5845#msg198636
+            history = os.path.join(os.path.expanduser('~'),
+                                   '.python_history')
             try:
-                readline_module.write_history_file(history)
-            except (FileNotFoundError, PermissionError):
-                # home directory does not exist or is not writable
-                # https://bugs.python.org/issue19891
+                readline.read_history_file(history)
+            except OSError:
                 pass
 
-        atexit.register(write_history)
+            def write_history():
+                try:
+                    readline.write_history_file(history)
+                except OSError:
+                    # bpo-19891, bpo-41193: Home directory does not exist
+                    # or is not writable, or the filesystem is read-only.
+                    pass
 
+            atexit.register(write_history)
+
+    sys.__interactivehook__ = register_readline
 
 def venv(known_paths):
     global PREFIXES, ENABLE_USER_SITE

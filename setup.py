@@ -12,16 +12,12 @@ def get_requirements(file_path: str) -> List[str]:
     :return:
     function to return a list of requirements
     '''
-    requirements = []
     with open(file_path) as rq:
-
-        requirements = rq.readlines()
-        requirements = [i.replace()("\n","") for i in requirements]
-
-        if "-e ." in requirements:
-            requirements.remove( "-e ." )
-
-    return requirements
+        return [
+            line.strip()
+            for line in rq.readlines()
+            if line.strip() and line.strip() != "-e ."
+        ]
 
 
 # parameters required for further classification of the project details and packages

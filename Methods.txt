@@ -33,3 +33,47 @@ cmd : "create -p venv python==3.13 -y"
 
 12: working with setup.py code for requirements
 # making setup.py as the
+
+13: install requirements.txt
+# pip3 install -r requirements.txt
+
+14: wrong python venv
+# I have trying to use tensorflow for this but however the latest version of tensorflow
+# does not support python 3.13 which i have already installed instead i have to downgrade it
+# Deactivate if active
+conda deactivate
+# Delete the old venv folder
+Remove-Item -Recurse -Force .\venv
+# Create new conda environment with Python 3.12
+conda create -p venv python=3.12 -y
+# Activate it
+conda activate .\venv
+# Install dependencies
+pip install -r requirements.txt
+
+
+15:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

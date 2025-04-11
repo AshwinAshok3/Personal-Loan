@@ -715,15 +715,16 @@ class SocketIO(io.RawIOBase):
         self._checkReadable()
         if self._timeout_occurred:
             raise OSError("cannot read from timed out object")
-        try:
-            return self._sock.recv_into(b)
-        except timeout:
-            self._timeout_occurred = True
-            raise
-        except error as e:
-            if e.errno in _blocking_errnos:
-                return None
-            raise
+        while True:
+            try:
+                return self._sock.recv_into(b)
+            except timeout:
+                self._timeout_occurred = True
+                raise
+            except error as e:
+                if e.errno in _blocking_errnos:
+                    return None
+                raise
 
     def write(self, b):
         """Write the given bytes or bytearray object *b* to the socket
@@ -931,7 +932,9 @@ def create_server(address, *, family=AF_INET, backlog=None, reuse_port=False,
                 # Fail later on bind(), for platforms which may not
                 # support this option.
                 pass
-        if reuse_port:
+        # Since Linux 6.12.9, SO_REUSEPORT is not allowed
+        # on other address families than AF_INET/AF_INET6.
+        if reuse_port and family in (AF_INET, AF_INET6):
             sock.setsockopt(SOL_SOCKET, SO_REUSEPORT, 1)
         if has_ipv6 and family == AF_INET6:
             if dualstack_ipv6:

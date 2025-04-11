@@ -1,6 +1,6 @@
-What's New in IDLE 3.13.0
+What's New in IDLE 3.12.z
 (since 3.12.0)
-Released on 2024-10-xx
+Released after 2023-10-02
 =========================
 
 
@@ -34,8 +34,7 @@ Patch by Terry Reedy.
 gh-112939: Fix processing unsaved files when quitting IDLE on macOS.
 Patch by Ronald Oussoren and Christopher Chavez.
 
-gh-79871: Add docstrings to debugger.py.  Fix two bugs in
-test_debugger and expand coverage by 47%.  Patch by Anthony Shaw.
+gh-79871: Add docstrings to debugger.py.  Fix two bugs in test_debugger and expand coverage by 47%.  Patch by Anthony Shaw.
 
 
 What's New in IDLE 3.12.0

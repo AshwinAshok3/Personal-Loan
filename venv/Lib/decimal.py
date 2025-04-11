@@ -103,7 +103,6 @@ try:
     from _decimal import __version__
     from _decimal import __libmpdec_version__
 except ImportError:
-    import _pydecimal
-    import sys
-    _pydecimal.__doc__ = __doc__
-    sys.modules[__name__] = _pydecimal
+    from _pydecimal import *
+    from _pydecimal import __version__
+    from _pydecimal import __libmpdec_version__

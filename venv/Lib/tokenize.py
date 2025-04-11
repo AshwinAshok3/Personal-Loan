@@ -41,7 +41,7 @@ blank_re = re.compile(br'^[ \t\f]*(?:[#\r\n]|$)', re.ASCII)
 
 import token
 __all__ = token.__all__ + ["tokenize", "generate_tokens", "detect_encoding",
-                           "untokenize", "TokenInfo", "open", "TokenError"]
+                           "untokenize", "TokenInfo"]
 del token
 
 class TokenInfo(collections.namedtuple('TokenInfo', 'type string start end line')):
@@ -161,6 +161,8 @@ tabsize = 8
 
 class TokenError(Exception): pass
 
+
+class StopTokenizing(Exception): pass
 
 class Untokenizer:
 
@@ -318,16 +320,10 @@ def untokenize(iterable):
     with at least two elements, a token number and token value.  If
     only two tokens are passed, the resulting output is poor.
 
-    Round-trip invariant for full input:
-        Untokenized source will match input source exactly
-
-    Round-trip invariant for limited input:
-        # Output bytes will tokenize back to the input
-        t1 = [tok[:2] for tok in tokenize(f.readline)]
-        newcode = untokenize(t1)
-        readline = BytesIO(newcode).readline
-        t2 = [tok[:2] for tok in tokenize(readline)]
-        assert t1 == t2
+    The result is guaranteed to tokenize back to match the input so
+    that the conversion is lossless and round-trips are assured.
+    The guarantee applies only to the token type and token string as
+    the spacing between tokens (column positions) may change.
     """
     ut = Untokenizer()
     out = ut.untokenize(iterable)
@@ -337,7 +333,7 @@ def untokenize(iterable):
 
 
 def _get_normal_name(orig_enc):
-    """Imitates get_normal_name in Parser/tokenizer/helpers.c."""
+    """Imitates get_normal_name in tokenizer.c."""
     # Only care about the first 12 characters.
     enc = orig_enc[:12].lower().replace("_", "-")
     if enc == "utf-8" or enc.startswith("utf-8-"):

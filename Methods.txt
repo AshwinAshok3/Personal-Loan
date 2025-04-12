@@ -52,16 +52,22 @@ conda activate .\venv
 pip install -r requirements.txt
 
 
-15: Git push all the changes
+15: Git pushed all the changes
 
-
-16: create a components folder for handling the dependencies
+16: created a components folder for handling the dependencies
 
 17: create exceptions and loggers file for exception and error handling
 
 18: trying to install imbalance learn for smote in the python library
 
-19:
+19: libraries conflict while working with notebook so had convert to python 3.10
+# so rest of the package in requirements.txt were also deleted
+# created a new list of almost same packages with better versions
+# without conflicts
+
+20: installing ipynb kernel inside my \venv
+
+21:
 
 
 

@@ -59,7 +59,9 @@ pip install -r requirements.txt
 
 17: create exceptions and loggers file for exception and error handling
 
-18:
+18: trying to install imbalance learn for smote in the python library
+
+19:
 
 
 

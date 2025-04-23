@@ -67,7 +67,11 @@ pip install -r requirements.txt
 
 20: installing ipynb kernel inside my \venv
 
-21:
+21: Completed the ipynb file and proceeding with the data transformation
+
+22: now preparing the web app along with the data transformation and input prediction.
+
+23:
 
 
 

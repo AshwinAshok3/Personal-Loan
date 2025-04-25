@@ -21,6 +21,5 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-if __name__ == "__main__":
-
-    logging.info(f"Logging to {LOG_FILE_PATH}")
+# expose logger object
+logger = logging.getLogger(__name__)

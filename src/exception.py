@@ -2,7 +2,7 @@
 # Purpose: Custom Exception Handling with detailed error tracking.
 
 import sys  # To fetch runtime exception details like traceback
-
+from src.logger import logger  #  Import logger.py
 # Error message formatting function
 def error_message_detail(error, error_detail: sys):
     _, _, exc_tb = error_detail.exc_info()  # Extract traceback info
@@ -15,6 +15,9 @@ def error_message_detail(error, error_detail: sys):
         f"Line Number: [{line_number}], "
         f"Error Details: [{str(error)}]"
     )
+    #  Log the error
+    logger.error(error_message)
+
     return error_message
 
 
@@ -29,3 +32,7 @@ class CustomException(Exception):
 
     def __repr__(self):
         return self.error_message  # For object representation
+
+
+
+

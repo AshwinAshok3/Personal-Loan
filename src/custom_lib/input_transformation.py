@@ -64,7 +64,7 @@ class FeatureValidator:
             raise CustomException(e, sys)
 
 
-    logger.info("Initiating CCAvg [Credit Card Spending Per Month] Input ...")
+    logger.info("Initiating CCAvg Input ...")
     def ccavg_input(self):
         ccvg = self.feature_dict.get("CCAvg")
         try :
@@ -88,7 +88,7 @@ class FeatureValidator:
 
     logger.info("Initiating Income Input ...")
     def income_input(self):
-        income = self.feature_dict.get("Income")
+        income = int(self.feature_dict.get("Income")/1000)
         try:
             if isinstance(income, int):
                 logger.info("Income Input Valid")
@@ -111,7 +111,7 @@ class FeatureValidator:
 
     logger.info("Initiating Mortgage Input ...")
     def mortgage_input(self):
-        mrtg = self.feature_dict.get("Mortgage")
+        mrtg = int(self.feature_dict.get("Mortgage")/1000)
         try:
             if isinstance(mrtg, int):
                 logger.info("Mortgage Input Valid")
@@ -139,15 +139,21 @@ class FeatureValidator:
 class FeatureTransformer:
     def data_transform(self, input_data: dict):
         df = pd.DataFrame([input_data])
+        print(f"Input Shape before transform {df.shape}")
         numerical_cols = ["CCAvg", "Income", "Mortgage"]
         categorical_cols = ["Family", "Education", "CD Account"]
-        preprocessing = ColumnTransformer(
+
+        self.preprocessing = ColumnTransformer(
             transformers=[
                 ('numericals', StandardScaler(), numerical_cols),
                 ('categorical', OneHotEncoder(handle_unknown='ignore'), categorical_cols)
             ]
         )
-        return preprocessing.fit_transform(df)
+
+        transformed_data = self.preprocessing.fit_transform(df)
+
+        print(f"Input Shape after transform {transformed_data.shape}")
+        return transformed_data
 
 # Main execution
 if __name__ == "__main__":
@@ -167,9 +173,15 @@ if __name__ == "__main__":
         validated_data = validator.get_validated_inputs()
         print("Validated Input Data:", validated_data)
 
+        logger.info("Initiating Transformer...")
         transformer = FeatureTransformer()
-        transformed_data = transformer.data_transform(validated_data)
-        print("\nTransformed Data (Ready for Model):\n", transformed_data)
+
+        logger.info("Transforming Input ...")
+        data_transformed = transformer.data_transform(validated_data)
+
+        logger.info("Finished Transform")
+        print("\nTransformed Data (Ready for Model):\n", data_transformed)
 
     except Exception as e:
         print("\nValidation Error:", e)
+        raise CustomException(e, sys)

@@ -36,12 +36,9 @@ from src.logger import logger
 from src.exception import CustomException
 import sys
 
-# importing column transformer
-from sklearn.compose import ColumnTransformer
-
-# importing metrics like standardization and encoding
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+# data and model loading
 import pandas as pd
+import joblib
 
 
 # =================================================================== #
@@ -121,7 +118,7 @@ class FeatureValidator:
             raise CustomException(e, sys)
 
     def get_validated_inputs(self):
-        logger.info("Valid INPUT Ready for Transformation !")
+        logger.info("Valid INPUT being fetched for Transformation !")
         return {
             "Family": self.family_input(),
             "CCAvg": self.ccavg_input(),
@@ -140,24 +137,19 @@ class FeatureTransformer:
     def data_transform(self, input_data: dict):
         df = pd.DataFrame([input_data])
         print(f"Input Shape before transform {df.shape}")
-        numerical_cols = ["CCAvg", "Income", "Mortgage"]
-        categorical_cols = ["Family", "Education", "CD Account"]
 
-        self.preprocessing = ColumnTransformer(
-            transformers=[
-                ('numericals', StandardScaler(), numerical_cols),
-                ('categorical', OneHotEncoder(handle_unknown='ignore'), categorical_cols)
-            ]
-        )
+        # loading the tranformer model
+        col_transformer = joblib.load("src/models/final_model/column_transformer.pkl")
 
-        transformed_data = self.preprocessing.fit_transform(df)
+        # transforming the features
+        transformed_data = col_transformer.transform(df)
 
         print(f"Input Shape after transform {transformed_data.shape}")
         return transformed_data
 
 # Main execution
 if __name__ == "__main__":
-    logger.info("fetching Inputs ...")
+    logger.info("Inputs Fetched...")
     user_input_dict = {
         "Family": 3,
         "CCAvg": 2.5,

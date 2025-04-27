@@ -147,33 +147,3 @@ class FeatureTransformer:
         print(f"Input Shape after transform {transformed_data.shape}")
         return transformed_data
 
-# Main execution
-if __name__ == "__main__":
-    logger.info("Inputs Fetched...")
-    user_input_dict = {
-        "Family": 3,
-        "CCAvg": 2.5,
-        "Education": 2,
-        "Income": 50000,
-        "CD Account": 1,
-        "Mortgage": 100000
-    }
-
-    try:
-        logger.info("Validating Given Inputs")
-        validator = FeatureValidator(user_input_dict)
-        validated_data = validator.get_validated_inputs()
-        print("Validated Input Data:", validated_data)
-
-        logger.info("Initiating Transformer...")
-        transformer = FeatureTransformer()
-
-        logger.info("Transforming Input ...")
-        data_transformed = transformer.data_transform(validated_data)
-
-        logger.info("Finished Transform")
-        print("\nTransformed Data (Ready for Model):\n", data_transformed)
-
-    except Exception as e:
-        print("\nValidation Error:", e)
-        raise CustomException(e, sys)

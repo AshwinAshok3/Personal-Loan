@@ -128,8 +128,6 @@ class FeatureValidator:
             "Mortgage": self.mortgage_input()
         }
 
-
-
 # ==================================================================== #
 #  CLASS FOR TRANSFORMING THE INPUT
 # ==================================================================== #
@@ -138,8 +136,9 @@ class FeatureTransformer:
         df = pd.DataFrame([input_data])
         print(f"Input Shape before transform {df.shape}")
 
-        # loading the tranformer model
-        col_transformer = joblib.load("src/models/final_model/column_transformer.pkl")
+        # loading the transformer model
+        # col_transformer = joblib.load("src/models/final_model/column_transformer.pkl")
+        col_transformer = joblib.load("src/custom_lib/column_transformer.pkl")
 
         # transforming the features
         transformed_data = col_transformer.transform(df)

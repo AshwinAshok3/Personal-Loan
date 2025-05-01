@@ -66,7 +66,7 @@ class fit_input:
 
 # Main execution
 if __name__ == "__main__":
-    print(tf.__version__)
+    # print(tf.__version__)
 
     logger.info("Inputs Fetched...")
     user_input_dict = {

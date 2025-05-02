@@ -26,6 +26,8 @@ def predict_inputs(transformed_input):
 def transformation_input(income_f1, family_f2, education_f4, mortgage_f5, ccavg_f3):
     # load the column transformer
     transformer = joblib.load("models/column_transformer.pkl")
+
+    # Inputs dictionary
     inputs_raw = {
         'Income': income_f1,
         'Family': family_f2,
@@ -35,9 +37,24 @@ def transformation_input(income_f1, family_f2, education_f4, mortgage_f5, ccavg_
     }
     inputs_df = pd.DataFrame(inputs_raw, index=[0])
 
+    # Perform transformation
     new_inputs = transformer.transform(inputs_df)
 
-    return new_inputs
+    # Fix column names
+    try:
+        # Get scaled feature names from the StandardScaler part
+        scaled_names = transformer.named_transformers_['Numbers'].get_feature_names_out(['Income', 'CCAvg', 'Mortgage'])
+    except:
+        scaled_names = ['Income', 'CCAvg', 'Mortgage']  # fallback in case method is unavailable
+
+    passthrough_cols = ['Family', 'Education']  # columns that weren't transformed
+    all_feature_names = list(scaled_names) + passthrough_cols
+
+    # Rebuild into DataFrame
+    transformed_df = pd.DataFrame(new_inputs, columns=all_feature_names)
+
+    return transformed_df
+
 
 
 

@@ -211,6 +211,9 @@ logger.info("Transformed 'X' data")
 # saving the column transformer model
 joblib.dump(cols_transform, "models/column_transformer.pkl")
 
+X_test_transformed = cols_transform.transform(X_test_1)
+
+print(X_test_transformed)
 
 ###################################################
 #----------------- MODEL CHOOSING ----------------#only using training data
@@ -286,7 +289,7 @@ logger.info("Getting Best parameters")
 
 # fitting best parameters with training set
 final_ml_model = GradientBoostingClassifier(**grad_boost_best_params)
-final_ml_model.fit(X_train_1, y_train_1)
+final_ml_model.fit(X_transformed, y_train_1)
 logger.info("Initiated Gradient Boosting Classifier and fitted the model !")
 
 ###################################################
@@ -294,7 +297,7 @@ logger.info("Initiated Gradient Boosting Classifier and fitted the model !")
 ###################################################
 
 # grad boost evaluation on test set
-y_pred = final_ml_model.predict(X_test_1)
+y_pred = final_ml_model.predict(X_test_transformed)
 logger.info("Prediction testing started")
 
 # Evaluating metrics

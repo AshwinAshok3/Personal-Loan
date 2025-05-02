@@ -66,8 +66,10 @@ for i in df_cols:
     print(df[i].unique())
     print("*"*20)
 
+
+
 ##################################################
-#               DATA TRANSFORMATION              #
+#                 SPLIT THE DATA                 #
 ##################################################
 if "Personal Loan" in df_cols:
     df_cols.remove("Personal Loan")
@@ -78,29 +80,8 @@ X = df[df_cols]
 y = df["Personal Loan"]
 logger.info("Separated X & y")
 
-# numerical columns
-num_col = ["Age", "Experience", "Income", "CCAvg", "Mortgage"]
-print(num_col)
-
-# initiating the transformer
-cols_transform = ColumnTransformer(
-    transformers=[("Numbers", StandardScaler(), num_col)],
-    remainder='passthrough'
-    )
-
-# fit and transform the train set onto the transfomer
-X_transformed = cols_transform.fit_transform(X)
-logger.info("Transformed 'X' data")
-
-# saving the column transformer model
-joblib.dump(cols_transform, "models/column_transformer.pkl")
-
-##################################################
-#                 SPLIT THE DATA                 #
-##################################################
-
 # splitting train and test dataset with equal proportion of 'y'
-X_train , X_test , y_train , y_test = train_test_split(X_transformed, y, 
+X_train , X_test , y_train , y_test = train_test_split(X, y,
                                                        test_size=0.3, 
                                                        random_state=3, 
                                                        stratify=y)
@@ -132,7 +113,7 @@ print(f"X_Train_resampled set shape \n X_train : {X_train_resampled.shape} \n \
 ###################################################
 
 # initializing the SelectKBest with mutual classif info for 5 top features
-feature_selector = SelectKBest(mutual_info_classif, k=6)
+feature_selector = SelectKBest(mutual_info_classif, k=5)
 logger.info("SelectKBest and mutual_info_classif initiated, implemented!!")
 
 # fitting the train and selecting the best 5 features from the train set
@@ -168,6 +149,43 @@ train_set.to_csv("data/train.csv", index=False)
 test_set = pd.DataFrame(X_test_selected, columns=selected_features)
 test_set['target'] = y_test  # Append target column
 test_set.to_csv("data/test.csv", index=False)
+
+
+##################################################
+#               DATA TRANSFORMATION              #
+##################################################
+
+train_df = pd.read_csv("data/train.csv")
+test_df = pd.read_csv("data/test.csv")
+
+print(train_df.columns)
+print(test_df.columns)
+
+X_train_1 = train_df.copy()
+X_train_1.drop(columns=['target'], inplace=True)
+y_train_1 = train_df['target']
+
+X_test_1 = test_df.copy()
+X_test_1.drop(columns=['target'], inplace=True)
+y_test_1 = test_df['target']
+
+# numerical columns
+num_col = ["Income", "CCAvg", "Mortgage"]
+print(num_col)
+
+# initiating the transformer
+cols_transform = ColumnTransformer(
+    transformers=[("Numbers", StandardScaler(), num_col)],
+    remainder='passthrough'
+    )
+
+# fit and transform the train set onto the transfomer
+X_transformed = cols_transform.fit_transform(X_train_1, y_train_1)
+logger.info("Transformed 'X' data")
+
+# saving the column transformer model
+joblib.dump(cols_transform, "models/column_transformer.pkl")
+
 
 ###################################################
 #----------------- MODEL CHOOSING ----------------#only using training data
@@ -206,13 +224,13 @@ logger.info("Initiated Gradient Boosting Classifier")
 
 # fitting the train set on catboost Classifier
 logger.info("started Catboost hyperparameter Tuning")
-catboost_grid.fit(X_train_selected, y_train_resampled)
+catboost_grid.fit(X_train_1, y_train_1)
 logger.info("Fitting data on Cat Boosting Classifier [Parameter Tuning Finished]")
 
 
 # fitting the train set on gradient boosting classifier
 logger.info("Started Gradient Boosting Classifier hyperparameter tuning")
-gradboost_grid.fit(X_train_selected, y_train_resampled)
+gradboost_grid.fit(X_train_1, y_train_1)
 logger.info("Fitting data on Gradient Boosting Classifier [Parameter Tuning Finished]")
 
 
@@ -243,7 +261,7 @@ logger.info("Getting Best parameters")
 
 # fitting best parameters with training set
 final_ml_model = GradientBoostingClassifier(**grad_boost_best_params)
-final_ml_model.fit(X_train_selected, y_train_resampled)
+final_ml_model.fit(X_train_1, y_train_1)
 logger.info("Initiated Gradient Boosting Classifier and fitted the model !")
 
 ###################################################
@@ -251,15 +269,15 @@ logger.info("Initiated Gradient Boosting Classifier and fitted the model !")
 ###################################################
 
 # grad boost evaluation on test set
-y_pred = final_ml_model.predict(X_test_selected)
+y_pred = final_ml_model.predict(X_test_1)
 logger.info("Prediction testing started")
 
 # Evaluating metrics
-acc_score = accuracy_score(y_test, y_pred)
-f1_score_ = f1_score(y_test, y_pred)
-roc_score_auc = roc_auc_score(y_test, y_pred)
-confusion_matrix1 = confusion_matrix(y_test, y_pred)
-classification_report1 = classification_report(y_test, y_pred)
+acc_score = accuracy_score(y_test_1, y_pred)
+f1_score_ = f1_score(y_test_1, y_pred)
+roc_score_auc = roc_auc_score(y_test_1, y_pred)
+confusion_matrix1 = confusion_matrix(y_test_1, y_pred)
+classification_report1 = classification_report(y_test_1, y_pred)
 
 logger.info("Evaluation metric started")
 # output all the metrics evaluation
@@ -278,12 +296,14 @@ logger.info("ML Model Saved")
 ###################################################
 # ---------------- NEURAL NETWORK ----------------#
 ###################################################
+print(X_test_1.shape)
+
 logger.info("INitiated Neural Network")
 # initializing the selector for tensorflow
 nn_model = tf.keras.Sequential()
 
 # validating inputs layer
-nn_model.add(tf.keras.Input(shape=(len(selected_features.tolist()),)))
+nn_model.add(tf.keras.Input(shape=(X_test_1.shape[1], )))
 logger.info("Initiated Neural Network and input shape done for data")
 
 # first layer of the neural network
@@ -316,7 +336,7 @@ logger.info("Compiling the neural network")
 
 # fitting the neural network model
 nn_model.fit(
-    X_train_selected, y_train_resampled,
+    X_train_1, y_train_1,
     validation_data=(X_test_selected, y_test),  # optional
     epochs=100,
     batch_size=100,
@@ -326,7 +346,7 @@ logger.info("Fit & training the model")
 
 # fitting the neural network model
 nn_model.fit(
-    X_train_selected, y_train_resampled,
+    X_train_1, y_train_1,
     validation_data=(X_test_selected, y_test),  # optional
     epochs=100,
     batch_size=100,

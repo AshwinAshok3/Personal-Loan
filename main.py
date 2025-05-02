@@ -67,7 +67,7 @@ for i in df_cols:
     print("*"*20)
 
 
-
+print(df.isna().sum())
 ##################################################
 #                 SPLIT THE DATA                 #
 ##################################################
@@ -119,36 +119,50 @@ logger.info("SelectKBest and mutual_info_classif initiated, implemented!!")
 # fitting the train and selecting the best 5 features from the train set
 X_train_selected = feature_selector.fit_transform(X_train_resampled, y_train_resampled)
 
-# transforming the test set
-X_test_selected = feature_selector.transform(X_test)
-logger.info("Best features Choosen")
+# shape
+print(X_train_selected.shape)
 
+# features list
+# print(X_train_selected.columns)
+
+logger.info("Best features Choosen")
 print(f"X_Train set shape new: {X_train_selected.shape}")
 print(f"y_Train set shape new {y_train_resampled.shape}")
-print(f"X_Test set shape {X_test_selected.shape}")
+print(f"X_Test set shape {X_test.shape}")
 print(f"y_Test set shape {y_test.shape}")
 
 # Get boolean mask of selected features
 mask = feature_selector.get_support()
-
+print(mask)
 # Use it to filter original column names
 selected_features = X.columns[mask]
 print("Choosen Features are :")
 print(selected_features.tolist())  # Convert to list if needed
 
 # saving the train set and test set
-# train set
-# Recombine selected features and target into one DataFrame
-train_set = pd.DataFrame(X_train_selected, columns=selected_features)
-train_set['target'] = y_train_resampled  # Append target column
+# Apply the mask to get selected columns for both train and test
+X_train_selected_df = pd.DataFrame(X_train_resampled.loc[:, mask], columns=selected_features)
 
-# Save to CSV
-train_set.to_csv("data/train.csv", index=False)
+# Shape check
+print("Selected Train shape:", X_train_selected_df.shape)
 
-# test set
-test_set = pd.DataFrame(X_test_selected, columns=selected_features)
-test_set['target'] = y_test  # Append target column
-test_set.to_csv("data/test.csv", index=False)
+X_train_selected_df = X_train_selected_df.copy()  # Ensure you're not modifying views
+X_train_selected_df["target"] = y_train_resampled.reset_index(drop=True)
+
+X_test_selected = feature_selector.transform(X_test)  # This returns NumPy array
+X_test_selected_df = pd.DataFrame(X_test_selected, columns=selected_features)
+X_test_selected_df["target"] = y_test.reset_index(drop=True)
+
+
+print(f"Final train set shape {X_train_selected_df.shape}" )
+print(f"Final test set shape {X_test_selected_df.shape}" )
+
+
+print(f"null values for train set : {X_train_selected_df.isna().sum()}")
+print(f"null values for test set : {X_test_selected_df.isna().sum()}")
+
+X_train_selected_df.to_csv("data/train.csv")
+X_test_selected_df.to_csv("data/test.csv")
 
 
 ##################################################
@@ -158,8 +172,19 @@ test_set.to_csv("data/test.csv", index=False)
 train_df = pd.read_csv("data/train.csv")
 test_df = pd.read_csv("data/test.csv")
 
+train_df.drop(columns=['Unnamed: 0'],inplace=True)
+test_df.drop(columns=['Unnamed: 0'], inplace=True)
+
 print(train_df.columns)
 print(test_df.columns)
+
+print(train_df.isna().sum())
+print(test_df.isna().sum())
+
+print(train_df.shape)
+print(test_df.shape)
+
+print(train_df.columns)
 
 X_train_1 = train_df.copy()
 X_train_1.drop(columns=['target'], inplace=True)

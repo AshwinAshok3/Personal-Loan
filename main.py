@@ -169,23 +169,29 @@ X_test_selected_df.to_csv("data/test.csv")
 #               DATA TRANSFORMATION              #
 ##################################################
 
+# loaded the train and test set into the py file
 train_df = pd.read_csv("data/train.csv")
 test_df = pd.read_csv("data/test.csv")
 
+# dropped the index column
 train_df.drop(columns=['Unnamed: 0'],inplace=True)
 test_df.drop(columns=['Unnamed: 0'], inplace=True)
 
+# checked the columns
 print(train_df.columns)
 print(test_df.columns)
 
+# checked if any null value are present
 print(train_df.isna().sum())
 print(test_df.isna().sum())
 
+# veiwing the shape of the data
 print(train_df.shape)
 print(test_df.shape)
 
 print(train_df.columns)
 
+# making a copy of the train and test df
 X_train_1 = train_df.copy()
 X_train_1.drop(columns=['target'], inplace=True)
 y_train_1 = train_df['target']
@@ -194,7 +200,7 @@ X_test_1 = test_df.copy()
 X_test_1.drop(columns=['target'], inplace=True)
 y_test_1 = test_df['target']
 
-# numerical columns
+# numerical columns assigning on which columns should the transformation occur
 num_col = ["Income", "CCAvg", "Mortgage"]
 print(num_col)
 
@@ -204,7 +210,7 @@ cols_transform = ColumnTransformer(
     remainder='passthrough'
     )
 
-# fit and transform the train set onto the transfomer
+# transform and fit the training dataset
 X_transformed = cols_transform.fit_transform(X_train_1, y_train_1)
 logger.info("Transformed 'X' data")
 
@@ -331,7 +337,7 @@ logger.info("INitiated Neural Network")
 nn_model = tf.keras.Sequential()
 
 # validating inputs layer
-nn_model.add(tf.keras.Input(shape=(X_test_1.shape[1], )))
+nn_model.add(tf.keras.Input(shape=(5, )))
 logger.info("Initiated Neural Network and input shape done for data")
 
 # first layer of the neural network
@@ -339,7 +345,7 @@ nn_model.add(tf.keras.layers.Dense(units = 16, activation='relu'))
 logger.info("First layer added to the neural network")
 
 # second layer
-nn_model.add(tf.keras.layers.Dense(units = 128, activation='swish'))
+nn_model.add(tf.keras.layers.Dense(units = 64, activation='swish'))
 logger.info("Second layer added to the neural network")
 
 # adding a dropout layer
@@ -347,7 +353,7 @@ nn_model.add(tf.keras.layers.Dropout(0.35))
 logger.info("Dropout layer added to the network")
 
 # third layer
-nn_model.add(tf.keras.layers.Dense(units = 64, activation='leaky_relu'))
+nn_model.add(tf.keras.layers.Dense(units = 32, activation='leaky_relu'))
 logger.info("Third layer added to the neural network")
 
 # final output layer
@@ -364,8 +370,8 @@ logger.info("Compiling the neural network")
 
 # fitting the neural network model
 nn_model.fit(
-    X_train_1, y_train_1,
-    validation_data=(X_test_selected, y_test),  # optional
+    X_transformed, y_train_1,
+    validation_data=(X_test_transformed, y_test),  # optional
     epochs=100,
     batch_size=100,
     verbose=1
@@ -374,8 +380,8 @@ logger.info("Fit & training the model")
 
 # fitting the neural network model
 nn_model.fit(
-    X_train_1, y_train_1,
-    validation_data=(X_test_selected, y_test),  # optional
+    X_transformed, y_train_1,
+    validation_data=(X_test_transformed, y_test),  # optional
     epochs=100,
     batch_size=100,
     verbose=2
@@ -384,6 +390,7 @@ logger.info("Fit & training the model")
 
 # saving the nn_model into keras format
 nn_model.save("models/neural_net.keras")
+nn_model.save("models/neural_net.h5")
 logger.info("NN Model saved")
 
 #########################

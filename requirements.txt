@@ -12,5 +12,5 @@ xgboost==1.7.6
 lightgbm==3.3.5
 catboost==1.2.2
 imbalanced-learn==0.10.1
-protobuf==3.19.6
+protobuf==5.29.6
 -e .
